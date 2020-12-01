@@ -1,0 +1,109 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Auto</title>
+
+        <!-- CSS -->
+        <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}" />
+
+        <!-- JQuery -->
+        <script src="{{url_for('static', filename='jquery/jquery-3.2.1.min.js')}}"></script> 
+
+        <!-- GSAP JS, GreenSock Animation Platform -->
+        <script src="{{url_for('static', filename='GSAP/TweenLite.min.js')}}"></script>
+        <script src="{{url_for('static', filename='GSAP/EasePack.min.js')}}"></script>
+        <script src="{{url_for('static', filename='GSAP/CSSPlugin.min.js')}}"></script>
+
+        <!-- Interact, JavaScript intertia -->
+        <script src="{{url_for('static', filename='js/interact.min.js')}}"></script>
+
+        <!-- JS -->
+        <script src="{{url_for('static', filename='js/scripts.js')}}"></script>    
+    </head>
+
+    <body>
+    
+        <!--<label class="switch">
+            <input type="checkbox" onclick="myFunction()">
+            <span class="slider" id="algeo"></span>
+        </label> -->
+        
+        <div id="joystick">
+          <div class="draggable" id="knob"></div>
+        </div>
+
+        <div id="console">
+            <h1 id="comando">Control por web</h1>
+            <h1 id="distancia">No se han detectado objectos cercanos</h1>
+        </div>
+
+
+
+        <div id="console">
+            <h1>Eje X: <span id="panValue">512</span>, Eje Y: <span id="tiltValue">512</span></h1>
+        </div>
+
+
+        <script type="text/javascript">
+            var target = document.getElementById('knob');
+
+            function getMode(){
+                $.get('/modo', function(data,status){
+                    control = data;
+                    if( control == 0){
+                        $("#comando").html("Control por web");
+                    }
+                    else {
+                        $("#comando").html("Control por joystick");
+                    }
+                });
+                setTimeout( getMode , 200 )
+            }
+
+
+            function getDistancia(){
+                $.get('/distancia', function(data,status){
+                    if( data > 30){
+                        $("#distancia").html("No se han detectado objetos cercanos");
+                    }
+                    else {
+                        $("#distancia").html("ALERTA: OBJETO CERCANO!!");
+                    }
+                });
+                setTimeout( getDistancia , 200 )
+            }
+
+
+            function controlJoystick(){
+                var x, y;
+                var x_norm, y_norm;
+
+                if( control == 1 ){
+                   $.get('/comandos', function(data,status){
+                       $.x = data[1];
+                       $.y = data[2];
+                   });
+
+                   $.x_norm = ($.x*100) / 1024;
+                   $.y_norm = ($.y*100) / 1024;
+
+                   // Desplaza el elemento
+                    target.style.webkitTransform = target.style.transform = 'translate(' + $.x_norm + 'px, ' + $.y_norm + 'px)';
+                    //console.log("Desplaza joystick a: " + $.x + " " + $.y)
+                    document.getElementById('knob').setAttribute('data-x', $.x_norm);
+                    document.getElementById('knob').setAttribute('data-y', $.y_norm);
+                }
+
+                setTimeout( controlJoystick , 100 )
+            }
+
+            $(document).ready( getMode );
+            $(document).ready( getDistancia );
+            $(document).ready( controlJoystick );
+        </script>
+	<img style = "-webkit-user-select: none;" src:"http://localhost:8081" width="640">
+    </body>
+
+    
